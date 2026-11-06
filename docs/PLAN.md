@@ -60,22 +60,22 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
 - [x] **0a** `chore: track .env.example and remove stray .Rhistory`. `.gitignore`: add `!.env.example` after `.env*`, add `.Rhistory`. `git add .env.example`, `git rm .Rhistory`. Check: `git check-ignore .env.example` prints nothing.
 - [x] **0b** `docs: align CLAUDE.md with the real setup`. Keeps Wen's pending rename. Line 24 → SUPABASE_SERVICE_ROLE_KEY. "Schema follows company dummy data" → "schema designed for our own menu". Data section → own menu, all-or-nothing zod validation, DATA_NOTES.md. Brand "US".
 - [x] **0c** `docs: add build plan`. Adds `docs/PLAN.md` (this file).
-- [ ] **0d** `chore: replace leftover Malaysian-menu examples in 001 comments`. Comments only; the SQL statements are unchanged, so nothing needs re-running.
-- [ ] **0e** `feat: add model fallback list and per-model smoke test`. `lib/ai/models.ts` exports `MODEL_IDS = ['gemini-3.8-flash', 'gemini-3.5-flash']`. `scripts/test-ai.ts` tries each model, prints OK/FAIL + latency, and exits 1 if none answer. Why 3.5-flash as backup: a different model has its own rate-limit quota and capacity, and the non-lite version keeps tool-calling quality.
+- [x] **0d** `chore: replace leftover Malaysian-menu examples in 001 comments`. Comments only; the SQL statements are unchanged, so nothing needs re-running.
+- [x] **0e** `feat: add model fallback list and per-model smoke test`. `lib/ai/models.ts` exports `MODEL_IDS = ['gemini-3.8-flash', 'gemini-3.5-flash']`. `scripts/test-ai.ts` tries each model, prints OK/FAIL + latency, and exits 1 if none answer. Why 3.5-flash as backup: a different model has its own rate-limit quota and capacity, and the non-lite version keeps tool-calling quality.
 - [ ] **Wen:** run this in the Supabase SQL Editor and paste the result. Expect exactly the price, spicy_level and category checks from 001:
   `select conname, pg_get_constraintdef(oid) from pg_constraint where conrelid = 'public.menu_items'::regclass and contype = 'c';`
 - [ ] **Wen:** confirm Vercel is connected and its env vars use the same 4 names. Especially `SUPABASE_SERVICE_ROLE_KEY`, not the old `SUPABASE_SECRET_KEY`.
 
 ### Step 1: verify the data layer
-- [ ] **1a** `chore: add read-only database check script`. `scripts/check-db.ts` checks:
+- [x] **1a** `chore: add read-only database check script`. `scripts/check-db.ts` checks:
   - row count, unavailable ids, category counts
   - drift vs `data/menu.json`
   - `orders`/`order_items` reachable
   - `place_order` present in the API schema
 
   It exits 1 on any mismatch. It makes its own client because `server-only` modules refuse to load outside Next. Run: `npx tsx --env-file=.env.local scripts/check-db.ts`.
-- [ ] **1b** `fix: list fish allergen for Chicken Caesar Salad`. Edits `data/menu.json`, then re-run `scripts/seed.ts` (upsert, safe to run twice) and `check-db.ts` → zero drift.
-- [ ] **1c** `docs: add DATA_NOTES.md`. Covers:
+- [x] **1b** `fix: list fish allergen for Chicken Caesar Salad`. Edits `data/menu.json`, then re-run `scripts/seed.ts` (upsert, safe to run twice) and `check-db.ts` → zero drift.
+- [x] **1c** `docs: add DATA_NOTES.md`. Covers:
   - provenance: made-up menu, no company data
   - money in integer cents
   - single 10-inch size
