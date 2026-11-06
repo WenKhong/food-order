@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CartSheet } from '@/components/cart/cart-sheet';
 
 export function SiteHeader() {
   return (
@@ -10,6 +11,7 @@ export function SiteHeader() {
           </span>
           <span className="text-xs text-muted-foreground">Halal pizza · Kuala Lumpur</span>
         </Link>
+        <CartSheet />
       </div>
     </header>
   );

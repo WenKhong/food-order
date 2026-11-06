@@ -129,7 +129,7 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
   - Stored JSON is zod-checked; corrupt data becomes an empty cart.
   - The `storage` event gives cross-tab sync.
   - `components/cart/add-to-cart-button.tsx` in each card's footer ("2 in cart" feedback; disabled when sold out or at 20).
-- [ ] **4c** `feat: cart sheet with qty, notes and remove`. `components/cart/cart-sheet.tsx`, opened from a header button with the item count. Qty −/+, notes, remove, and a subtotal labelled as an estimate. The Checkout button arrives with `/checkout` in step 5 (no link to a page that doesn't exist yet).
+- [x] **4c** `feat: cart sheet with qty, notes and remove`. `components/cart/cart-sheet.tsx`, opened from a header button with the item count. Qty −/+, notes, remove, and a subtotal labelled as an estimate. The Checkout button arrives with `/checkout` in step 5 (no link to a page that doesn't exist yet).
 
 ### 5. Checkout + POST /api/orders + confirmation
 - [ ] `lib/orders/queries.ts` (server-only): `placeOrder()` → `rpc('place_order', { p_customer_name, p_phone, p_fulfilment, p_address, p_items })`, plus `getOrder(id)`.
