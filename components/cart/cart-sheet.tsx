@@ -1,8 +1,11 @@
 'use client';
 
 import { MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { cn } from 'cn';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Sheet,
@@ -21,9 +24,11 @@ import { formatRM } from '@/lib/money';
 export function CartSheet() {
   const cart = useCart();
   const count = itemCount(cart);
+  // Controlled, so following the Checkout link can also close the sheet.
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={<Button variant="outline" aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`} />}
       >
@@ -61,6 +66,13 @@ export function CartSheet() {
               <p className="text-xs text-muted-foreground">
                 This is an estimate. The final price comes from our menu when you place the order.
               </p>
+              <Link
+                href="/checkout"
+                onClick={() => setOpen(false)}
+                className={cn(buttonVariants({ size: 'lg' }))}
+              >
+                Checkout
+              </Link>
             </SheetFooter>
           </>
         )}

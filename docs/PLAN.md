@@ -143,7 +143,7 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - Hides phone and address; the unguessable UUID link is the only "key".
   - A small client component calls `router.refresh()` every 15 s while the order is still active.
   - `next typegen` added to `npm run check`, so new routes' types exist before `tsc` runs.
-- [ ] **5c** `feat: checkout form with MY phone validation`. `app/checkout/page.tsx` + `components/checkout/checkout-form.tsx`, plus the cart sheet's Checkout button:
+- [x] **5c** `feat: checkout form with MY phone validation`. `app/checkout/page.tsx` + `components/checkout/checkout-form.tsx`, plus the cart sheet's Checkout button:
   - Fields: name, phone, pickup/delivery radio, address shown for delivery. shadcn `label`, `textarea`, `radio-group` (copied from the registry by hand).
   - Same zod schema on the client for instant feedback; the server re-validates.
   - Submit is disabled while pending, so no double orders.
