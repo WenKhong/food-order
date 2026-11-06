@@ -5,17 +5,11 @@ import { z } from 'zod';
 import { badgeVariants } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatRM } from '@/lib/money';
+import { formatOrderTime, orderNumber } from '@/lib/orders/format';
 import { getOrder } from '@/lib/orders/queries';
 import { isFinished, STATUS_LABELS, STATUS_STEPS, statusMessage } from '@/lib/orders/status';
 import type { OrderStatus } from '@/lib/schemas/order';
 import { AutoRefresh } from './auto-refresh';
-
-// Show times in Malaysia, whatever time zone the server runs in.
-const placedAtFormat = new Intl.DateTimeFormat('en-MY', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-  timeZone: 'Asia/Kuala_Lumpur',
-});
 
 export async function OrderDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,7 +26,7 @@ export async function OrderDetails({ params }: { params: Promise<{ id: string }>
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">
-          Order #{order.id.slice(0, 8).toUpperCase()} · {placedAtFormat.format(new Date(order.created_at))}
+          Order {orderNumber(order.id)} · {formatOrderTime(order.created_at)}
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">Thanks, {firstName}!</h1>
         {/* aria-live: screen readers announce the new status after an auto-refresh */}

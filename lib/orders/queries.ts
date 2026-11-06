@@ -67,3 +67,27 @@ export async function getOrder(id: string): Promise<PublicOrder | null> {
   }
   return data ? PublicOrder.parse(data) : null;
 }
+
+// What the admin board needs to prepare and hand over an order, including the
+// contact details. Only ever called behind the admin session.
+const AdminOrder = PublicOrder.extend({
+  phone: z.string(),
+  address: z.string().nullable(),
+});
+export type AdminOrder = z.infer<typeof AdminOrder>;
+
+export async function listOrders(): Promise<AdminOrder[]> {
+  const { data, error } = await getSupabase()
+    .from('orders')
+    .select(
+      'id, customer_name, phone, address, fulfilment, status, total_cents, created_at, ' +
+        'order_items(id, qty, unit_price_cents, notes, menu_items(name))',
+    )
+    .order('created_at', { ascending: false })
+    .order('id', { referencedTable: 'order_items' })
+    .limit(50);
+  if (error) {
+    throw new Error(`Could not load orders: ${error.message}`);
+  }
+  return z.array(AdminOrder).parse(data);
+}
