@@ -1,6 +1,6 @@
 -- MENU
 create table menu_items (
-  id text primary key,                         -- readable slug, e.g. 'nasi-lemak-ayam'
+  id text primary key,                         -- readable slug, e.g. 'beef-pepperoni'
   name text not null,
   description text,
   category text not null check (category in ('pizza','pasta','sides','drinks','desserts')),
@@ -45,7 +45,7 @@ create or replace function place_order(
   p_phone text,
   p_fulfilment text,
   p_address text,
-  p_items jsonb   -- [{"menu_item_id":"teh-tarik","qty":2,"notes":"less sugar"}]
+  p_items jsonb   -- [{"menu_item_id":"margherita","qty":2,"notes":"extra basil"}]
 ) returns uuid
 language plpgsql
 set search_path = public
