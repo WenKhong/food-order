@@ -24,6 +24,13 @@ export const OrderLine = z.object({
 export type OrderLine = z.infer<typeof OrderLine>;
 
 export const Fulfilment = z.enum(['pickup', 'delivery']);
+export type Fulfilment = z.infer<typeof Fulfilment>;
+
+// Same values as the orders.status check in the database, in the order an
+// order moves through them (cancelled can happen at any point).
+export const ORDER_STATUSES = ['pending', 'preparing', 'ready', 'completed', 'cancelled'] as const;
+export const OrderStatus = z.enum(ORDER_STATUSES);
+export type OrderStatus = z.infer<typeof OrderStatus>;
 
 const checkoutFields = {
   customer_name: z.string().trim().min(2, 'Please enter your name').max(80, 'Name is too long'),

@@ -137,7 +137,7 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - Validation → 422 + field errors; `Item unavailable:` → 409; `Unknown item:` and check violations → 422.
   - Anything else → 500 with a generic message; details are logged on the server only (never the body: it has a phone number).
   - Never reads a price or total from the client. Verified with curl: tampered price/total/status ignored (stored 5030, 2290, pending), and a rejected order with a valid item first left zero rows behind.
-- [ ] **5b** `feat: order confirmation page with live status`. `app/orders/[id]/page.tsx` + `getOrder(id)`:
+- [x] **5b** `feat: order confirmation page with live status`. `app/orders/[id]/page.tsx` + `getOrder(id)`:
   - Suspense around the details (`params` is a Promise in Next 16). Non-UUID → `notFound()`.
   - Shows status, items at their snapshot `unit_price_cents`, the DB total and fulfilment.
   - Hides phone and address; the unguessable UUID link is the only "key".

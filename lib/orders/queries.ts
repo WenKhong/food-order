@@ -1,7 +1,7 @@
 import 'server-only';
 import { z } from 'zod';
 import { getSupabase } from '@/lib/supabase/server';
-import type { PlaceOrderRequest } from '@/lib/schemas/order';
+import { Fulfilment, OrderStatus, type PlaceOrderRequest } from '@/lib/schemas/order';
 import { orderRejection, type OrderRejection } from './errors';
 
 export type PlaceOrderResult = { ok: true; id: string } | ({ ok: false } & OrderRejection);
@@ -29,4 +29,41 @@ export async function placeOrder(order: PlaceOrderRequest): Promise<PlaceOrderRe
     throw new Error(`place_order failed (${error.code}): ${error.message}`);
   }
   return { ok: true, id: z.uuid().parse(data) };
+}
+
+// What anyone holding the order link may see. Deliberately no phone or address:
+// the link is the only "key", so it should reveal as little as possible.
+const PublicOrder = z.object({
+  id: z.uuid(),
+  customer_name: z.string(),
+  fulfilment: Fulfilment,
+  status: OrderStatus,
+  total_cents: z.number().int(),
+  created_at: z.string(),
+  order_items: z.array(
+    z.object({
+      id: z.number().int(),
+      qty: z.number().int(),
+      unit_price_cents: z.number().int(), // the price when the order was placed
+      notes: z.string().nullable(),
+      menu_items: z.object({ name: z.string() }),
+    }),
+  ),
+});
+export type PublicOrder = z.infer<typeof PublicOrder>;
+
+export async function getOrder(id: string): Promise<PublicOrder | null> {
+  const { data, error } = await getSupabase()
+    .from('orders')
+    .select(
+      'id, customer_name, fulfilment, status, total_cents, created_at, ' +
+        'order_items(id, qty, unit_price_cents, notes, menu_items(name))',
+    )
+    .eq('id', id)
+    .order('id', { referencedTable: 'order_items' }) // items in the order they were added
+    .maybeSingle();
+  if (error) {
+    throw new Error(`Could not load order: ${error.message}`);
+  }
+  return data ? PublicOrder.parse(data) : null;
 }
