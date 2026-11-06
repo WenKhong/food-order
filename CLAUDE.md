@@ -1,8 +1,10 @@
 # Project: food-order
 
-Mini online food-ordering web app with an AI ordering assistant.
+Mini online food-ordering web app with an AI ordering assistant, for "US", a halal
+pizza restaurant in Kuala Lumpur (our own made-up menu; no company data was supplied).
 24-hour take-home for an internship application. The reviewer will read the code,
 the README, and the git history. I (Wen) must be able to explain every line.
+Build plan and progress: `docs/PLAN.md`.
 
 ## Stack
 - Next.js (App Router) + TypeScript (strict)
@@ -15,17 +17,17 @@ the README, and the git history. I (Wen) must be able to explain every line.
 ## Environment variables (in .env.local, never committed)
 - GOOGLE_GENERATIVE_AI_API_KEY
 - SUPABASE_URL
-- SUPABASE_SECRET_KEY (new `sb_secret_` key, not legacy service_role JWT)
+- SUPABASE_SERVICE_ROLE_KEY (new `sb_secret_` key, not legacy service_role JWT)
 - ADMIN_PASSWORD
 Never prefix any of these with NEXT_PUBLIC_. Never hardcode secrets. Keep .env.example in sync (names only).
 
 ## Database rules
 - Data API tables are NOT auto-exposed and RLS is ON for every table.
-- The browser never talks to Supabase. All DB access goes through server code (route handlers / server components) using SUPABASE_SECRET_KEY.
+- The browser never talks to Supabase. All DB access goes through server code (route handlers / server components) using SUPABASE_SERVICE_ROLE_KEY.
 - Every migration that creates tables ends with:
   `grant select, insert, update, delete on all tables in schema public to service_role;`
 - Money is stored as integer cents (`price_cents`, `total_cents`). Never floats.
-- The schema follows the dummy data supplied by the company. Keep their field names where possible.
+- The schema is designed around our own menu (`data/menu.json`). Use the same field names in code and AI tools.
 
 ## Security rules (non-negotiable)
 - The server recomputes every price and total from the DB. Never trust totals from the client or the LLM.
@@ -40,8 +42,10 @@ Never prefix any of these with NEXT_PUBLIC_. Never hardcode secrets. Keep .env.e
 - Check the current AI SDK docs before writing chat or tool code; APIs change between versions.
 
 ## Data
-- Company dummy data is loaded via `scripts/seed.ts`: validate with zod → clean → upsert (safe to run twice).
-- Bad rows are skipped and logged, never guessed. Missing price → `is_available = false`.
+- No company data was given. The menu is our own: `data/menu.json` (24 items, single 10-inch size).
+- `scripts/seed.ts` validates every row with zod, then upserts by `id` (safe to run twice).
+- Validation is all-or-nothing: one bad row stops the seed, so we never load a partial menu or guess a value.
+- To retire an item, set `is_available = false` instead of deleting it (past orders reference it).
 - Every data issue and how it was handled goes into DATA_NOTES.md.
 
 ## How to work with me
