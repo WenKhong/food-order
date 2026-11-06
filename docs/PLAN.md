@@ -116,7 +116,7 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
   - Sold-out items are faded with a "Sold out" badge. The disabled Add button comes with the cart in step 4.
   - `app/layout.tsx`: metadata ("US · Halal pizza in Kuala Lumpur") + site header. Boilerplate SVGs removed.
   - `components/ui/skeleton.tsx`: the registry file, copied by hand so the CLI wouldn't reinstall `cn`. `separator` wasn't needed.
-- [ ] **3c** `app/error.tsx`: friendly error page with a retry button.
+- [x] **3c** `app/error.tsx`: friendly error page with a retry button.
 - Commits: `fix: apply the Geist font…`, `feat: menu page grouped by category`, `feat: friendly error page with retry`.
 
 ### 4. Cart (localStorage) + cart sheet
