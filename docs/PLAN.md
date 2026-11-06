@@ -97,7 +97,7 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
     - `CheckoutDetails`: name 2–80, phone, `fulfilment: 'pickup' | 'delivery'`, address required (≥ 10 chars) only for delivery and dropped for pickup.
     - `PlaceOrderRequest`: `CheckoutDetails` + `items: OrderLine[1..30]`. zod strips unknown keys, so a sneaky `price_cents` never reaches the DB.
   - `lib/schemas/order.test.ts`: valid pickup and delivery; delivery without address; phone formats (`012-345 6789` ok, `+60 11-2345 6789` ok, landline `0312345678` rejected); qty 0 and 21 rejected; extra price field stripped; empty items rejected.
-- [ ] **2d** `refactor: seed script reuses the shared MenuItem schema`. `scripts/seed.ts` imports `../lib/schemas/menu`, so there is one definition of a menu item. Re-run seed + check-db.
+- [x] **2d** `refactor: seed script reuses the shared MenuItem schema`. `scripts/seed.ts` imports `../lib/schemas/menu`, so there is one definition of a menu item. Re-run seed + check-db.
 - [ ] **2e** `feat: add server-only Supabase client and menu queries`.
   - `lib/env.ts`: zod-validated server env, read lazily so `next build` needs no secrets until code actually runs. ADMIN_PASSWORD min 8, with a clear error.
   - `lib/supabase/server.ts`: `import 'server-only'`, one client, no session persistence.
