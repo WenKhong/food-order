@@ -17,17 +17,17 @@ If more of the brief is pasted later, this plan gets updated.
 | `.env.local` names | 4 keys | GOOGLE_GENERATIVE_AI_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (holds a `sb_secret_` key), ADMIN_PASSWORD. All set, none NEXT_PUBLIC_ | ✅ |
 | `.env.example` | same names, empty, tracked | Names right and empty, **but matched by `.env*` (.gitignore:34), so it was never committed** | ❌ |
 | `.env.local` ignored | yes | yes (.gitignore:35) | ✅ |
-| Secrets in git history | none | 0 hits in all commits for `sb_secret_…`, `AIza…`, `ADMIN_PASSWORD=<value>`, legacy `eyJ…` JWTs, the project URL. Working tree clean too | ✅ |
+| Secrets in git history | none | 0 hits in all commits for `sb_secret_…`, `AIza…`, `ADMIN_PASSWORD` set to a value, legacy `eyJ…` JWTs, the project URL. Working tree clean too | ✅ |
 | `scripts/test-ai.ts` | fallback list, 3.8 first | **One hardcoded model, no fallback list, no error handling.** `lib/ai/models.ts` (named in CLAUDE.md) doesn't exist | ❌ |
 | CLAUDE.md | matches reality | **Uncommitted edit** (env name changed to SERVICE_ROLE_KEY). Line 24 still says SUPABASE_SECRET_KEY. Data + DB sections still describe "company dummy data" and skip-bad-rows rules that don't apply | ❌ |
 | `001_init.sql` | 3 tables, place_order(), RLS, grants | All present and correct. Category check **already** pizza/pasta/sides/drinks/desserts. 2 leftover comments (`nasi-lemak-ayam`, `teh-tarik`) | ✅ (cosmetic) |
-| `002_pizza_categories.sql` | exists | **Does not exist** (not on disk, not in git). Decision: keep 001 only, document it | ❌ → documented |
+| `002_pizza_categories.sql` | exists | **Does not exist** (not on disk, not in git). Decision: keep 001 only, document it. The live DB's check constraints were then confirmed to be 001's three | ❌ → resolved |
 | `data/menu.json` | 24 items, 2 unavailable | 24. Unavailable: truffle-mushroom, mango-smoothie. pizza 9 / pasta 4 / sides 4 / drinks 4 / desserts 3 | ✅ |
 | `scripts/seed.ts` | 5 pizza categories | Enum matches. Validates the whole file at once (any bad row aborts) | ✅ |
 | Live DB (server client + secret key) | 24 rows, 2 unavailable | 24 rows, same 2 unavailable, same counts, **zero drift** vs menu.json. `orders`/`order_items` reachable (0 rows). `/rpc/place_order` is in the API schema cache | ✅ |
 | Gemini key | works | 200 from the models API. `gemini-3.8-flash`, `3.7-flash` and `3.5-flash` all available | ✅ |
 | Git remote | GitHub | origin → github.com/WenKhong/food-order, branch `main` | ✅ |
-| Vercel | connected | Can't check from here (no CLI, no `.vercel/`). **Wen confirms**, including env var names | ❓ |
+| Vercel | connected | Can't check from here (no CLI, no `.vercel/`). Confirmed by Wen: connected, and the env var names match | ✅ |
 | Extras | — | `.Rhistory` (empty R file) is tracked. README, `app/page.tsx` and layout metadata are still create-next-app boilerplate | ⚠️ |
 
 ### Broken or missing, and the fix
@@ -62,9 +62,10 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
 - [x] **0c** `docs: add build plan`. Adds `docs/PLAN.md` (this file).
 - [x] **0d** `chore: replace leftover Malaysian-menu examples in 001 comments`. Comments only; the SQL statements are unchanged, so nothing needs re-running.
 - [x] **0e** `feat: add model fallback list and per-model smoke test`. `lib/ai/models.ts` exports `MODEL_IDS = ['gemini-3.8-flash', 'gemini-3.5-flash']`. `scripts/test-ai.ts` tries each model, prints OK/FAIL + latency, and exits 1 if none answer. Why 3.5-flash as backup: a different model has its own rate-limit quota and capacity, and the non-lite version keeps tool-calling quality.
-- [ ] **Wen:** run this in the Supabase SQL Editor and paste the result. Expect exactly the price, spicy_level and category checks from 001:
+- [x] **Wen:** run this in the Supabase SQL Editor and paste the result. Expect exactly the price, spicy_level and category checks from 001:
   `select conname, pg_get_constraintdef(oid) from pg_constraint where conrelid = 'public.menu_items'::regclass and contype = 'c';`
-- [ ] **Wen:** confirm Vercel is connected and its env vars use the same 4 names. Especially `SUPABASE_SERVICE_ROLE_KEY`, not the old `SUPABASE_SECRET_KEY`.
+  Result: `menu_items_category_check`, `menu_items_price_cents_check`, `menu_items_spicy_level_check`, the same names and rules as 001, and nothing left over from the old category list.
+- [x] **Wen:** confirm Vercel is connected and its env vars use the same 4 names. Especially `SUPABASE_SERVICE_ROLE_KEY`, not the old `SUPABASE_SECRET_KEY`. Confirmed.
 
 ### Step 1: verify the data layer
 - [x] **1a** `chore: add read-only database check script`. `scripts/check-db.ts` checks:
@@ -225,7 +226,7 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
 
 ### 13. Final
 - [ ] Incognito run on the live URL: order → admin → status change.
-- [ ] Re-run the Step 0 secret scan.
+- [ ] Re-run the Step 0 secret scan. One known false positive: the ADMIN_PASSWORD pattern matches placeholder text in commit 0a64b7d (the first version of this file), not a real password.
 - [ ] 2–3 min demo script.
 
 **Nice-to-have (only if ahead):** order lookup by ID in chat (status only, no personal details), rate limit on `/api/chat`, a 中文 eval case.

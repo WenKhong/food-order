@@ -32,8 +32,9 @@ vegetarian tags, cheap items under RM5, and a spread of allergens.
    Malaysian menu. Before any data existed, it was switched to pizza, pasta, sides, drinks
    and desserts, and the change was folded into `supabase/migrations/001_init.sql` instead of
    a separate migration, so replaying 001 on a fresh database gives the current schema.
-   *(Pending: one query against the live constraints to confirm they match 001; see
-   `docs/PLAN.md`, Phase 0.)*
+   Confirmed 2026-11-06 with a query on `pg_constraint`: the live `menu_items` table has
+   exactly the three check constraints 001 creates (category, price_cents, spicy_level),
+   under the same names, and nothing left over from the old category list.
 3. **Leftover examples.** Two SQL comments still named Malaysian dishes. They were replaced;
    the SQL itself is unchanged.
 
