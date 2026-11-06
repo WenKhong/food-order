@@ -156,7 +156,7 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - Tests: valid, expired, extended expiry, tampered signature, wrong secret, malformed, password check.
   - `lib/admin/session.ts` (server-only): httpOnly cookie, `secure` in production, `sameSite: 'strict'`, path `/admin`, 8 h. `adminPassword()` in `lib/env.ts` (min 8, checked against the real value first).
 - [x] **6b** `feat: admin sign-in and order board`. `app/admin/page.tsx`: Suspense → a gate reads the cookie → sign-in form, or the board (latest 50 orders with phone, address, items, total, KL time). `noindex`. `app/admin/actions.ts` (`'use server'`): `login` (short pause on a wrong password), `logout`. Setting/deleting the cookie re-renders the page in the same round trip.
-- [ ] **6c** `feat: admin order status updates`. Buttons for the next allowed step (pending → preparing → ready → completed; cancel before completion), enforced by a pure, tested `canMoveTo()`. The `changeOrderStatus` action re-checks the session (Server Actions are public POST endpoints), zod-validates id/from/to, updates `where id = ? and status = from` (a stale click changes nothing), then `refresh()`.
+- [x] **6c** `feat: admin order status updates`. Buttons for the next allowed step (pending → preparing → ready → completed; cancel before completion), enforced by a pure, tested `canMoveTo()`. The `changeOrderStatus` action re-checks the session (Server Actions are public POST endpoints), zod-validates id/from/to, updates `where id = ? and status = from` (a stale click changes nothing), then `refresh()`.
 
 ### 7. Chat route + tools + model fallback
 - [ ] `lib/ai/models.ts`: `createFallbackModel(models)` using `wrapLanguageModel` middleware (`wrapStream` + `wrapGenerate`).
@@ -224,6 +224,7 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - what's next: size variants, payments, accounts, rate limits, idempotency keys, realtime status, `use cache` for the menu, admin brute-force protection, Playwright e2e
 
 ### 13. Final
+- [ ] **Wen:** make production public. On 2026-11-07, `https://food-order-liew2.vercel.app` answered every request with a redirect to a Vercel login (`401 Protected by Vercel Authentication`), so a reviewer couldn't open it. Fix: Vercel → Project → Settings → Deployment Protection → Vercel Authentication → "Standard Protection" (previews stay private, production becomes public), or turn it off. Then re-run the live smoke test.
 - [ ] Incognito run on the live URL: order → admin → status change.
 - [ ] Re-run the Step 0 secret scan. One known false positive: the ADMIN_PASSWORD pattern matches placeholder text in commit 0a64b7d (the first version of this file), not a real password.
 - [ ] 2–3 min demo script.

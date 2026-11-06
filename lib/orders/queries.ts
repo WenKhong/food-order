@@ -91,3 +91,19 @@ export async function listOrders(): Promise<AdminOrder[]> {
   }
   return z.array(AdminOrder).parse(data);
 }
+
+// Moves an order to a new status, but only if it is still in the status the
+// admin saw (`from`). If someone changed it in the meantime, nothing is updated
+// and this returns false; the board then simply shows the current status.
+export async function updateOrderStatus(id: string, from: OrderStatus, to: OrderStatus): Promise<boolean> {
+  const { data, error } = await getSupabase()
+    .from('orders')
+    .update({ status: to })
+    .eq('id', id)
+    .eq('status', from)
+    .select('id');
+  if (error) {
+    throw new Error(`Could not update order: ${error.message}`);
+  }
+  return data.length === 1;
+}

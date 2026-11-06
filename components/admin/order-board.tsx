@@ -1,5 +1,5 @@
 import { cn } from 'cn';
-import { logout } from '@/app/admin/actions';
+import { changeOrderStatus, logout } from '@/app/admin/actions';
 import { AutoRefresh } from '@/components/orders/auto-refresh';
 import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,15 @@ import {
   CardAction,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { formatRM } from '@/lib/money';
 import { formatOrderTime, orderNumber } from '@/lib/orders/format';
 import type { AdminOrder } from '@/lib/orders/queries';
-import { isFinished, STATUS_LABELS } from '@/lib/orders/status';
+import { ACTION_LABELS, isFinished, nextStatuses, STATUS_LABELS } from '@/lib/orders/status';
+import { StatusButton } from './status-button';
 import type { OrderStatus } from '@/lib/schemas/order';
 
 // New orders stand out (dark badge); cancelled ones read as a warning.
@@ -106,6 +108,27 @@ function OrderCard({ order }: { order: AdminOrder }) {
         </ul>
         <p className="font-medium tabular-nums">Total {formatRM(order.total_cents)}</p>
       </CardContent>
+      {nextStatuses(order.status).length > 0 && (
+        <CardFooter className="mt-auto flex-wrap gap-2">
+          {nextStatuses(order.status).map((to) => (
+            // One small form per button. It works even before JavaScript loads,
+            // and sends only the order id, the status shown here, and the target.
+            <form key={to} action={changeOrderStatus}>
+              <input type="hidden" name="orderId" value={order.id} />
+              <input type="hidden" name="from" value={order.status} />
+              <input type="hidden" name="to" value={to} />
+              <StatusButton
+                variant={to === 'cancelled' ? 'destructive' : 'default'}
+                confirmMessage={
+                  to === 'cancelled' ? `Cancel order ${orderNumber(order.id)}? This can't be undone.` : undefined
+                }
+              >
+                {ACTION_LABELS[to]}
+              </StatusButton>
+            </form>
+          ))}
+        </CardFooter>
+      )}
     </Card>
   );
 }

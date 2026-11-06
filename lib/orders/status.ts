@@ -17,6 +17,34 @@ export function isFinished(status: OrderStatus) {
   return status === 'completed' || status === 'cancelled';
 }
 
+// Where an order may go next. Staff move it one step forward, or cancel it
+// before it's completed. Finished orders never change.
+const NEXT_STATUSES: Record<OrderStatus, OrderStatus[]> = {
+  pending: ['preparing', 'cancelled'],
+  preparing: ['ready', 'cancelled'],
+  ready: ['completed', 'cancelled'],
+  completed: [],
+  cancelled: [],
+};
+
+export function nextStatuses(status: OrderStatus): OrderStatus[] {
+  return NEXT_STATUSES[status];
+}
+
+// Checked on the server for every change, whatever the browser sent.
+export function canMoveTo(from: OrderStatus, to: OrderStatus): boolean {
+  return NEXT_STATUSES[from].includes(to);
+}
+
+// Admin button text for moving an order to each status ("pending" is never offered).
+export const ACTION_LABELS: Record<OrderStatus, string> = {
+  pending: 'Mark received',
+  preparing: 'Start preparing',
+  ready: 'Mark ready',
+  completed: 'Complete',
+  cancelled: 'Cancel order',
+};
+
 export function statusMessage(status: OrderStatus, fulfilment: Fulfilment): string {
   switch (status) {
     case 'pending':
