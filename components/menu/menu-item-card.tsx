@@ -1,10 +1,12 @@
 import { cn } from 'cn';
+import { AddToCartButton } from '@/components/cart/add-to-cart-button';
 import { badgeVariants } from '@/components/ui/badge';
 import {
   Card,
   CardAction,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -20,9 +22,10 @@ const TAG_BADGES = new Map([
   ['seasonal', 'Seasonal'],
 ]);
 
-// A Server Component: it renders to HTML and ships no JavaScript.
-// Badges use badgeVariants on a plain <span> because shadcn's <Badge> calls a
-// Base UI hook that needs useRef, which doesn't exist in Server Components.
+// A Server Component: it renders to HTML, and only the Add button inside it
+// ships JavaScript. Badges use badgeVariants on a plain <span> because shadcn's
+// <Badge> calls a Base UI hook that needs useRef, which doesn't exist in
+// Server Components.
 export function MenuItemCard({ item }: { item: MenuItem }) {
   const soldOut = !item.is_available;
   const tagLabels = item.tags.flatMap((tag) => TAG_BADGES.get(tag) ?? []);
@@ -52,6 +55,12 @@ export function MenuItemCard({ item }: { item: MenuItem }) {
           <p className="text-xs text-muted-foreground">Contains: {item.allergens.join(', ')}</p>
         )}
       </CardContent>
+      <CardFooter>
+        <AddToCartButton
+          item={{ id: item.id, name: item.name, price_cents: item.price_cents }}
+          available={item.is_available}
+        />
+      </CardFooter>
     </Card>
   );
 }

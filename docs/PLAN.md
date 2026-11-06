@@ -123,7 +123,7 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
 - [x] **4a** `feat: pure cart helpers`. `lib/cart.ts` + `lib/cart.test.ts`:
   - `CartLine { id, name, price_cents, qty, notes? }`. Name and price are display copies only; `toOrderLines()` sends only ids/qty/notes.
   - Functions: `addItem` (merges by id, caps at 20), `setQty`, `setNotes`, `removeItem`, `subtotalCents`, `itemCount`, `parseCart` (bad saved data → empty cart).
-- [ ] **4b** `feat: add to cart from the menu`. `lib/cart-store.ts` (client): localStorage as an external store read with `useSyncExternalStore`.
+- [x] **4b** `feat: add to cart from the menu`. `lib/cart-store.ts` (client): localStorage as an external store read with `useSyncExternalStore`.
   - Empty cart on the server, real cart after hydration.
   - No `useEffect` + `setState`: `react-hooks/set-state-in-effect` is an error in this lint config.
   - Stored JSON is zod-checked; corrupt data becomes an empty cart.
