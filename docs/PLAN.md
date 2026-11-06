@@ -132,23 +132,22 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
 - [x] **4c** `feat: cart sheet with qty, notes and remove`. `components/cart/cart-sheet.tsx`, opened from a header button with the item count. Qty −/+, notes, remove, and a subtotal labelled as an estimate. The Checkout button arrives with `/checkout` in step 5 (no link to a page that doesn't exist yet).
 
 ### 5. Checkout + POST /api/orders + confirmation
-- [ ] `lib/orders/queries.ts` (server-only): `placeOrder()` → `rpc('place_order', { p_customer_name, p_phone, p_fulfilment, p_address, p_items })`, plus `getOrder(id)`.
-- [ ] `app/api/orders/route.ts`: parse JSON → `PlaceOrderRequest.safeParse` (422 + field errors) → RPC → 201 `{ id }`.
-  - `Item unavailable:` → 409. `Unknown item:` and check violations → 422.
-  - Anything else → 500 with a generic message; details are logged on the server only.
-  - Never reads a price or total from the client.
-- [ ] `app/checkout/page.tsx` + `components/checkout/checkout-form.tsx`:
-  - Fields: name, phone, pickup/delivery radio, address shown for delivery.
-  - Same zod schema on the client for instant feedback; the server re-validates.
-  - Submit is disabled while pending, so no double orders.
-  - Success → clear cart → `/orders/[id]`. A 409 shows "X is sold out, remove it".
-- [ ] `app/orders/[id]/page.tsx`:
+Order changed so no commit links to a page that doesn't exist yet: API → confirmation page → checkout form.
+- [x] **5a** `feat: POST /api/orders via place_order RPC`. `lib/orders/queries.ts` (server-only `placeOrder()`), `lib/orders/errors.ts` (pure, tested: maps the DB's exceptions to reasons), `app/api/orders/route.ts`.
+  - Validation → 422 + field errors; `Item unavailable:` → 409; `Unknown item:` and check violations → 422.
+  - Anything else → 500 with a generic message; details are logged on the server only (never the body: it has a phone number).
+  - Never reads a price or total from the client. Verified with curl: tampered price/total/status ignored (stored 5030, 2290, pending), and a rejected order with a valid item first left zero rows behind.
+- [ ] **5b** `feat: order confirmation page with live status`. `app/orders/[id]/page.tsx` + `getOrder(id)`:
   - Suspense around the details (`params` is a Promise in Next 16). Non-UUID → `notFound()`.
   - Shows status, items at their snapshot `unit_price_cents`, the DB total and fulfilment.
   - Hides phone and address; the unguessable UUID link is the only "key".
-  - A small client component calls `router.refresh()` every 15 s.
-- [ ] shadcn: `label`, `textarea`, `radio-group`.
-- Commits: `feat: POST /api/orders via place_order RPC`, `feat: checkout form with MY phone validation`, `feat: order confirmation page with live status`.
+  - A small client component calls `router.refresh()` every 15 s while the order is still active.
+  - `next typegen` added to `npm run check`, so new routes' types exist before `tsc` runs.
+- [ ] **5c** `feat: checkout form with MY phone validation`. `app/checkout/page.tsx` + `components/checkout/checkout-form.tsx`, plus the cart sheet's Checkout button:
+  - Fields: name, phone, pickup/delivery radio, address shown for delivery. shadcn `label`, `textarea`, `radio-group` (copied from the registry by hand).
+  - Same zod schema on the client for instant feedback; the server re-validates.
+  - Submit is disabled while pending, so no double orders.
+  - Success → clear cart → `/orders/[id]`. A 409 shows "X just sold out" with a button to remove it.
 
 ### 6. /admin
 - [ ] `lib/admin/token.ts` (pure, tested):
