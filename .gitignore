@@ -33,8 +33,6 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-.env.local
-# the template has names only (no values), so it is safe and useful to commit
 !.env.example
 
 # vercel
