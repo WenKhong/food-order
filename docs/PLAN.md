@@ -109,13 +109,15 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
 ## Remaining build (steps 3–13)
 
 ### 3. Menu page
-- [ ] `app/page.tsx`: static header + `<Suspense fallback={<MenuSkeleton/>}>` around an async `Menu`. `Menu` calls `await connection()`, then `getMenu()`: fresh data every request and no DB call at build time.
-  - Grouped in `CATEGORIES` order, with anchor nav.
-  - Cards show price, spice level, vegetarian tag and allergens.
-  - Sold-out items are greyed out, with a "Sold out" badge and a disabled Add button.
-- [ ] `app/layout.tsx`: metadata ("US · halal pizza in KL") + site header. `app/error.tsx`: friendly retry.
-- [ ] `npx shadcn add skeleton separator`. Stop and ask if the CLI wants to install any npm package.
-- Commits: `feat: menu page grouped by category`, `feat: menu loading and error states`.
+- [x] **3a** (found while building) `fix: apply the Geist font`. The theme set `--font-sans: var(--font-sans)`, so the page used the browser's default font. Checked in the built CSS.
+- [x] **3b** `app/page.tsx`: static header + `<Suspense fallback={<MenuSkeleton/>}>` around an async `Menu`. `Menu` calls `await connection()`, then `getMenu()`: fresh data every request and no DB call at build time. The build reports `/` as Partial Prerender.
+  - Grouped in `CATEGORIES` order, with sticky anchor nav.
+  - Cards show price, spice level, tag badges and allergens. They are Server Components, so badges use `badgeVariants` (shadcn's `<Badge>` needs `useRef`, which Server Components don't have).
+  - Sold-out items are faded with a "Sold out" badge. The disabled Add button comes with the cart in step 4.
+  - `app/layout.tsx`: metadata ("US · Halal pizza in Kuala Lumpur") + site header. Boilerplate SVGs removed.
+  - `components/ui/skeleton.tsx`: the registry file, copied by hand so the CLI wouldn't reinstall `cn`. `separator` wasn't needed.
+- [ ] **3c** `app/error.tsx`: friendly error page with a retry button.
+- Commits: `fix: apply the Geist font…`, `feat: menu page grouped by category`, `feat: friendly error page with retry`.
 
 ### 4. Cart (localStorage) + cart sheet
 - [ ] `lib/cart.ts` (pure) + `lib/cart.test.ts`:
