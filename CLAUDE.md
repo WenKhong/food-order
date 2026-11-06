@@ -61,3 +61,5 @@ Never prefix any of these with NEXT_PUBLIC_. Never hardcode secrets. Keep .env.e
 - Type check: `npx tsc --noEmit`
 - Lint: `npm run lint`
 - Run a script: `npx tsx --env-file=.env.local scripts/<name>.ts`
+- Unit tests: `npm test` (Node's built-in test runner via tsx; files are `lib/**/*.test.ts`)
+- After every feature: `npm run check` (lint + type check + tests)

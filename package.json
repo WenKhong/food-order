@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "tsx --test 'lib/**/*.test.ts'",
+    "check": "npm run lint && tsc --noEmit && npm test"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.112",
@@ -31,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
     "tailwindcss": "^4",
+    "tsx": "4.23.15",
     "typescript": "^5"
   }
 }
