@@ -89,7 +89,7 @@ After every commit: `npm run lint && npx tsc --noEmit` (+ `npm test` once it exi
 ### Step 2: `lib/` foundations
 - [x] **2a** `chore: add tsx and npm test script`. `tsx` devDependency (pinned). Scripts: `"test": "tsx --test 'lib/**/*.test.ts'"` and `"check": "npm run lint && tsc --noEmit && npm test"`. CLAUDE.md Commands updated.
 - [x] **2b** `feat: add RM money formatter`. `lib/money.ts`: `formatRM(cents)` → `"RM 28.90"`, integer math only (`Math.floor(c / 100)`, `c % 100`, en-MY grouping), so no floats even for display. `lib/money.test.ts`: 2890, 300, 5, 0, 123456 → `RM 1,234.56`; rejects negative and non-integer input.
-- [ ] **2c** `feat: add shared zod schemas for menu and orders`.
+- [x] **2c** `feat: add shared zod schemas for menu and orders`.
   - `lib/schemas/menu.ts`: `Category`, `CATEGORIES` (display order), `MenuItem`.
   - `lib/schemas/order.ts`:
     - `phoneMY`: strips spaces/dashes, matches `^(\+?60|0)1[0-46-9]\d{7,8}$`, normalises to `+601…`.
