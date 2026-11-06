@@ -20,3 +20,15 @@ export function supabaseEnv() {
   }
   return result.data;
 }
+
+const AdminPassword = z
+  .string('ADMIN_PASSWORD is missing')
+  .min(8, 'ADMIN_PASSWORD must be at least 8 characters');
+
+export function adminPassword(): string {
+  const result = AdminPassword.safeParse(process.env.ADMIN_PASSWORD);
+  if (!result.success) {
+    throw new Error(`Invalid server environment:\n${z.prettifyError(result.error)}`);
+  }
+  return result.data;
+}

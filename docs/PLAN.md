@@ -150,15 +150,13 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - Success → clear cart → `/orders/[id]`. A 409 shows "X just sold out" with a button to remove it.
 
 ### 6. /admin
-- [ ] `lib/admin/token.ts` (pure, tested):
-  - `signSession(secret, expiresAt)` → `exp.hmacSHA256`.
-  - `verifySession(token, secret, now)` uses `timingSafeEqual`.
-  - The password check compares SHA-256 digests with `timingSafeEqual`.
-- [ ] `lib/admin/session.ts` (server-only): an httpOnly cookie, `secure` in production, `sameSite: 'strict'`, 8 h.
-- [ ] `app/admin/page.tsx`: Suspense → a gate reads the cookie → login form, or the orders table (latest 50, items, total, time, status select). `noindex`.
-- [ ] `app/admin/actions.ts` (`'use server'`): `login`, `logout`, `updateOrderStatus`. Each action re-checks the cookie itself (Server Actions are public POST endpoints), zod-validates id + status, then refreshes `/admin` per the bundled Next docs.
-- [ ] `lib/admin/token.test.ts`: valid, expired, tampered, wrong secret.
-- Commits: `feat: signed admin session cookie`, `feat: admin login and order list`, `feat: admin order status updates`.
+- [x] **6a** `feat: signed admin session cookie`. `lib/admin/token.ts` (pure) + `lib/admin/token.test.ts`:
+  - `createSessionToken(secret)` → `<expiry>.<HMAC-SHA256 signature>`; `isValidSessionToken(token, secret, now)`; `isCorrectPassword`.
+  - Comparisons are constant-time (`timingSafeEqual` on SHA-256 digests).
+  - Tests: valid, expired, extended expiry, tampered signature, wrong secret, malformed, password check.
+  - `lib/admin/session.ts` (server-only): httpOnly cookie, `secure` in production, `sameSite: 'strict'`, path `/admin`, 8 h. `adminPassword()` in `lib/env.ts` (min 8, checked against the real value first).
+- [ ] **6b** `feat: admin sign-in and order board`. `app/admin/page.tsx`: Suspense → a gate reads the cookie → sign-in form, or the board (latest 50 orders with phone, address, items, total, KL time). `noindex`. `app/admin/actions.ts` (`'use server'`): `login` (short pause on a wrong password), `logout`. Setting/deleting the cookie re-renders the page in the same round trip.
+- [ ] **6c** `feat: admin order status updates`. Buttons for the next allowed step (pending → preparing → ready → completed; cancel before completion), enforced by a pure, tested `canMoveTo()`. The `changeOrderStatus` action re-checks the session (Server Actions are public POST endpoints), zod-validates id/from/to, updates `where id = ? and status = from` (a stale click changes nothing), then `refresh()`.
 
 ### 7. Chat route + tools + model fallback
 - [ ] `lib/ai/models.ts`: `createFallbackModel(models)` using `wrapLanguageModel` middleware (`wrapStream` + `wrapGenerate`).
