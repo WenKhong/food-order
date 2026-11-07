@@ -194,7 +194,7 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - On every case: every "RM x.xx" must be a menu price or an amount a tool returned; no system-prompt leak; at most 150 words.
   - `--self-test` (no network): each case carries a deliberately bad answer, and all 11 must be rejected, so a pass means something. `--verbose` prints every reply.
   - First run: 11/11. But reading the replies showed two problems the rules didn't catch: an unprompted "halal **certified**" (the data has only a flag), and "check your confirmation **email/SMS**" for order status (we send none; "order status" is in the prompt's scope but there was no tool).
-- [ ] **9b** `test: eval checks halal claims and order-status answers`. Universal check: no "halal certified" claim. New cases: halal certification question, order status with a number, order status without one (no email/SMS/WhatsApp mentions).
+- [x] **9b** `test: eval checks halal claims and order-status answers`. Universal check: no "halal certified" claim. New cases: halal certification question, order status with a number, order status without one (no email/SMS/WhatsApp mentions). Self-test 14/14. Baseline before fixes: **12/14**. Both order-status cases failed: "check your order confirmation email or SMS", and asking for the customer's phone number.
 - [ ] **9c** `fix: …` per failure, through tools and tool descriptions (the prompt stays as-is): a `get_order_status` tool (status + time only, by the short number on the order page), and a note that the halal flag carries no certification details. Record results in the README.
 
 ### 10. Polish
