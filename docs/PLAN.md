@@ -179,7 +179,7 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
 
 ### 8. Chat widget wired to the cart
 - [x] **8a** `feat: safe markdown rendering for chat replies`. Gemini replies in light markdown, so `lib/chat/markdown.ts` (pure, 6 tests) parses bold, italic and lists into data, and `components/chat/markdown.tsx` renders React elements. No raw HTML, so replies can't inject markup.
-- [ ] **8b** `feat: extract cart actions from chat replies`. `lib/chat/actions.ts` (pure, tested): only finished, successful add_to_cart / go_to_checkout outputs become actions, each with its toolCallId so it is applied once.
+- [x] **8b** `feat: extract cart actions from chat replies`. `lib/chat/actions.ts` (pure, tested): only finished, successful add_to_cart / go_to_checkout outputs become actions, each with its toolCallId so it is applied once.
 - [ ] **8c** `feat: chat widget wired to the cart`. `npm i --save-exact @ai-sdk/react@4.0.167` (approved; same release as ai 7.0.163, published 2026-11-05). `components/chat/chat-widget.tsx`, mounted in the root layout so it's on every page and the conversation survives navigation.
   - Floating button → Sheet. `useChat<ChatMessage>({ transport: DefaultChatTransport('/api/chat'), onFinish })`.
   - `sendMessage({ text }, { body: { cart } })` and `regenerate({ body: { cart } })`: the cart is read at send time, because a hook-level body would be stale.

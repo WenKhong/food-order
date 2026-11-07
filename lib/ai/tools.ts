@@ -16,6 +16,14 @@ type ToolDeps = {
   loadMenu: () => Promise<MenuItem[]>; // getMenu() in the app, a fixed list in tests
 };
 
+// What add_to_cart asks the browser to do (the cart lives there, not on the server).
+export type AddToCartAction = {
+  type: 'add_to_cart';
+  item: { id: string; name: string; price_cents: number };
+  qty: number;
+  notes?: string;
+};
+
 // What the model sees about an item: facts straight from the database, with
 // the price already formatted so the model never has to do maths on it.
 function describeItem(item: MenuItem) {
@@ -98,18 +106,14 @@ export function createTools({ cart, loadMenu }: ToolDeps) {
           workingCart.push(notes ? { menu_item_id, qty, notes } : { menu_item_id, qty });
         }
 
-        return {
-          ok: true as const,
-          added: `${qty} × ${item.name}`,
-          price_each: formatRM(item.price_cents),
-          // The cart lives in the browser, so the chat widget applies this action.
-          action: {
-            type: 'add_to_cart' as const,
-            item: { id: item.id, name: item.name, price_cents: item.price_cents },
-            qty,
-            ...(notes ? { notes } : {}),
-          },
+        // The cart lives in the browser, so the chat widget applies this action.
+        const action: AddToCartAction = {
+          type: 'add_to_cart',
+          item: { id: item.id, name: item.name, price_cents: item.price_cents },
+          qty,
         };
+        if (notes) action.notes = notes;
+        return { ok: true as const, added: `${qty} × ${item.name}`, price_each: formatRM(item.price_cents), action };
       },
     }),
 
