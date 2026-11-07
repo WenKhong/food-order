@@ -164,7 +164,7 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - Non-retryable errors (400, bad key) are re-thrown.
   - Logs say only status + message (`describeAIError`), never the error object: it carries the customer's messages.
   - `lib/ai/models.test.ts` (7 tests, `MockLanguageModelV4`, no network): first works → backup untouched; 503/429 → backup; streaming too; 400 → no fallback; all fail → throws.
-- [ ] **7b** `feat: menu search helper`. `lib/menu/search.ts` (pure) + tests: query words, category, max price, max spice, vegetarian, exclude allergens.
+- [x] **7b** `feat: menu search helper`. `lib/menu/search.ts` (pure) + tests: query words, category, max price, max spice, vegetarian, exclude allergens.
 - [ ] **7c** `feat: chat tools with server-side validation`. `lib/ai/prompt.ts` (the given system prompt, name = "US") and `lib/ai/tools.ts`: `createTools({ cart, loadMenu })` per request; the menu loader is passed in, so the tools are testable with a fake menu. The SDK validates every input with zod.
   - `search_menu`, `get_item`: facts from the DB only, including the sold-out flag; prices pre-formatted ("RM 22.90").
   - `add_to_cart({ menu_item_id, qty, notes })`: re-checks the menu (exists, available, 20 per item including what's already in the cart), then returns `{ ok: true, action }` or `{ ok: false, reason }`. There is no price input.
