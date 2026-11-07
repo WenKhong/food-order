@@ -198,7 +198,8 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
 - [x] **9c** Fixes through tools and tool descriptions (the prompt stays as-is):
   - `fix: assistant can look up an order's status by its number`: a `get_order_status` tool (status + time only, by the short number on the order page; the description says status lives on the order page and no emails/SMS are sent).
   - `fix: say the halal flag carries no certification details`: one sentence in the search_menu description.
-  - **Result: 14/14** against a local production build with real Gemini and the real DB (2026-11-07). Re-run against the live URL after the next merge, then record the table in the README (step 12).
+  - **Result: 14/14** against a local production build with real Gemini and the real DB (2026-11-07).
+  - **Live: 14/14** against https://food-order-liew2.vercel.app after merging (`main` = `f5ca8d1`, 2026-11-07). Most replies took 3–7 s; one (seafood allergy) took 29 s (slow model or a fallback; check Vercel logs for "falling back"). Put the table in the README (step 12).
 
 ### 10. Polish
 - [ ] Mobile layout (chat sheet from the bottom on small screens), loading/empty/error states, a11y labels, favicon + metadata.
