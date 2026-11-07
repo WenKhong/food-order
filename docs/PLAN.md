@@ -159,24 +159,23 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
 - [x] **6c** `feat: admin order status updates`. Buttons for the next allowed step (pending → preparing → ready → completed; cancel before completion), enforced by a pure, tested `canMoveTo()`. The `changeOrderStatus` action re-checks the session (Server Actions are public POST endpoints), zod-validates id/from/to, updates `where id = ? and status = from` (a stale click changes nothing), then `refresh()`.
 
 ### 7. Chat route + tools + model fallback
-- [ ] `lib/ai/models.ts`: `createFallbackModel(models)` using `wrapLanguageModel` middleware (`wrapStream` + `wrapGenerate`).
-  - If a model fails **before the first token** with a retryable `APICallError` (429/5xx/overloaded), the next model gets the same params.
-  - Non-retryable errors (400) are re-thrown.
-  - `lib/ai/models.test.ts` uses `MockLanguageModelV4` from `ai/test`: 503 → backup used; 400 → no fallback; all fail → throws.
-- [ ] `lib/ai/prompt.ts`: the system prompt (name = "US").
-- [ ] `lib/menu/search.ts` (pure) + tests: query, category, max price, max spice, vegetarian, exclude allergens.
-- [ ] `lib/ai/tools.ts`: `createTools({ cart })` per request (closure). The SDK validates every input with zod.
-  - `search_menu`, `get_item`: facts from the DB only, including the sold-out flag.
-  - `add_to_cart({ menu_item_id, qty, notes })`: re-checks the DB (exists, available, qty cap), then returns `{ ok: true, action: { type: 'add', item: { id, name, price_cents }, qty, notes } }` or `{ ok: false, reason }`. There is no price input.
-  - `view_cart`: re-prices the client's cart from the DB.
-  - `go_to_checkout`: returns `{ ok: true, action: { type: 'navigate', href: '/checkout' } }`.
+- [x] **7a** `feat: model fallback wrapper`. `lib/ai/models.ts`: `withFallback(models)` using `wrapLanguageModel` middleware (`wrapStream` + `wrapGenerate`); `chatModel` = 3.8-flash → 3.5-flash.
+  - If a model fails **before the first token** with a retryable `APICallError` (408/409/429/5xx), the next model gets the same params.
+  - Non-retryable errors (400, bad key) are re-thrown.
+  - Logs say only status + message (`describeAIError`), never the error object: it carries the customer's messages.
+  - `lib/ai/models.test.ts` (7 tests, `MockLanguageModelV4`, no network): first works → backup untouched; 503/429 → backup; streaming too; 400 → no fallback; all fail → throws.
+- [ ] **7b** `feat: menu search helper`. `lib/menu/search.ts` (pure) + tests: query words, category, max price, max spice, vegetarian, exclude allergens.
+- [ ] **7c** `feat: chat tools with server-side validation`. `lib/ai/prompt.ts` (the given system prompt, name = "US") and `lib/ai/tools.ts`: `createTools({ cart, loadMenu })` per request; the menu loader is passed in, so the tools are testable with a fake menu. The SDK validates every input with zod.
+  - `search_menu`, `get_item`: facts from the DB only, including the sold-out flag; prices pre-formatted ("RM 22.90").
+  - `add_to_cart({ menu_item_id, qty, notes })`: re-checks the menu (exists, available, 20 per item including what's already in the cart), then returns `{ ok: true, action }` or `{ ok: false, reason }`. There is no price input.
+  - `view_cart`: re-prices the client's cart (ids + quantities only) from the DB.
+  - `go_to_checkout`: returns an action the widget turns into navigation; refuses an empty cart.
   - **No place-order tool exists.**
-- [ ] `app/api/chat/route.ts`:
-  - zod body `{ messages (≤ 30), cart (≤ 30 lines) }`, then `validateUIMessages`.
-  - `streamText({ model, instructions, messages: await convertToModelMessages(…), tools, stopWhen: isStepCount(5), maxRetries: 1 })`.
+- [ ] **7d** `feat: streaming /api/chat route`. `app/api/chat/route.ts`:
+  - zod body `{ messages (≤ 40), cart (≤ 30 lines) }`, then `validateUIMessages`.
+  - `streamText({ model: chatModel, instructions, messages: await convertToModelMessages(…), tools, stopWhen: isStepCount(5), maxRetries: 0 })`. Retries are off because the fallback already switches models; SDK retries would add seconds of backoff.
   - Response: `createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: result.stream, originalMessages, onError: () => 'Assistant is busy, please try again.' }) })`.
-  - The real error is logged on the server.
-- Commits: `feat: model fallback wrapper`, `feat: menu search helper`, `feat: chat tools with server-side validation`, `feat: streaming /api/chat route`.
+  - The real error is logged on the server (short form).
 
 ### 8. Chat widget wired to the cart
 - [ ] `npm i @ai-sdk/react@4.0.167` (approved).
