@@ -195,7 +195,10 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - `--self-test` (no network): each case carries a deliberately bad answer, and all 11 must be rejected, so a pass means something. `--verbose` prints every reply.
   - First run: 11/11. But reading the replies showed two problems the rules didn't catch: an unprompted "halal **certified**" (the data has only a flag), and "check your confirmation **email/SMS**" for order status (we send none; "order status" is in the prompt's scope but there was no tool).
 - [x] **9b** `test: eval checks halal claims and order-status answers`. Universal check: no "halal certified" claim. New cases: halal certification question, order status with a number, order status without one (no email/SMS/WhatsApp mentions). Self-test 14/14. Baseline before fixes: **12/14**. Both order-status cases failed: "check your order confirmation email or SMS", and asking for the customer's phone number.
-- [ ] **9c** `fix: …` per failure, through tools and tool descriptions (the prompt stays as-is): a `get_order_status` tool (status + time only, by the short number on the order page), and a note that the halal flag carries no certification details. Record results in the README.
+- [x] **9c** Fixes through tools and tool descriptions (the prompt stays as-is):
+  - `fix: assistant can look up an order's status by its number`: a `get_order_status` tool (status + time only, by the short number on the order page; the description says status lives on the order page and no emails/SMS are sent).
+  - `fix: say the halal flag carries no certification details`: one sentence in the search_menu description.
+  - **Result: 14/14** against a local production build with real Gemini and the real DB (2026-11-07). Re-run against the live URL after the next merge, then record the table in the README (step 12).
 
 ### 10. Polish
 - [ ] Mobile layout (chat sheet from the bottom on small screens), loading/empty/error states, a11y labels, favicon + metadata.

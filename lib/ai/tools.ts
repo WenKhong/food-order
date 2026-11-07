@@ -60,7 +60,9 @@ export function createTools({ cart, loadMenu, findOrder }: ToolDeps) {
       description:
         'Search the menu. Use English keywords (translate if the customer writes in Malay or Chinese) and/or filters. ' +
         'Returns matching items with price, availability, spice level (0 = not spicy, 3 = very spicy), halal flag, ' +
-        'allergens and tags. Use this before recommending or mentioning any item.',
+        'allergens and tags. Use this before recommending or mentioning any item. The halal flag only means the menu ' +
+        'lists the item as halal (there are no certification details), and allergens are the tags on file, not a ' +
+        'certified declaration.',
       inputSchema: z.object({
         query: z.string().max(100).optional().describe('English keywords, e.g. "chicken", "pasta", "cheese"'),
         category: Category.optional(),
@@ -76,7 +78,7 @@ export function createTools({ cart, loadMenu, findOrder }: ToolDeps) {
     }),
 
     get_item: tool({
-      description: 'Get one menu item by its id (ids come from search_menu).',
+      description: 'Get one menu item by its id (ids come from search_menu). Same fields and caveats as search_menu.',
       inputSchema: z.object({ id: ItemId }),
       execute: async ({ id }) => {
         const item = await findItem(id);
