@@ -178,15 +178,13 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - The real error is logged on the server (short form).
 
 ### 8. Chat widget wired to the cart
-- [ ] `npm i @ai-sdk/react@4.0.167` (approved).
-- [ ] `components/chat/chat-widget.tsx`, mounted in the root layout so it's on every page and the conversation survives navigation.
-  - Floating button → Sheet. `useChat({ transport: new DefaultChatTransport({ api: '/api/chat' }), onFinish })`.
-  - `sendMessage({ text }, { body: { cart } })`: the cart is read at send time, because a hook-level body would be stale.
-- [ ] `onFinish` applies cart actions, deduped by `toolCallId`:
-  - `tool-add_to_cart` with `ok: true` → cart store.
-  - `tool-go_to_checkout` → close the sheet + `router.push('/checkout')`.
-- [ ] UI: tool chips ("Added 2 × Margherita", "Sold out"), typing state, Stop, an error banner "Assistant is busy, please try again" + Retry (`regenerate`), starter prompts (EN / BM / 中文).
-- Commits: `feat: chat widget with streaming replies`, `feat: apply chat cart actions and checkout handoff`.
+- [x] **8a** `feat: safe markdown rendering for chat replies`. Gemini replies in light markdown, so `lib/chat/markdown.ts` (pure, 6 tests) parses bold, italic and lists into data, and `components/chat/markdown.tsx` renders React elements. No raw HTML, so replies can't inject markup.
+- [ ] **8b** `feat: extract cart actions from chat replies`. `lib/chat/actions.ts` (pure, tested): only finished, successful add_to_cart / go_to_checkout outputs become actions, each with its toolCallId so it is applied once.
+- [ ] **8c** `feat: chat widget wired to the cart`. `npm i --save-exact @ai-sdk/react@4.0.167` (approved; same release as ai 7.0.163, published 2026-11-05). `components/chat/chat-widget.tsx`, mounted in the root layout so it's on every page and the conversation survives navigation.
+  - Floating button → Sheet. `useChat<ChatMessage>({ transport: DefaultChatTransport('/api/chat'), onFinish })`.
+  - `sendMessage({ text }, { body: { cart } })` and `regenerate({ body: { cart } })`: the cart is read at send time, because a hook-level body would be stale.
+  - `onFinish` applies the actions from 8b: add_to_cart → cart store; go_to_checkout → close the sheet + `router.push('/checkout')`.
+  - UI: tool chips ("Added 2 × Margherita", "Truffle Mushroom is sold out"), a "Thinking…" state, Stop, an error banner "Assistant is busy, please try again" with Try again + New chat, starter prompts (EN / BM / 中文). Hidden on /admin.
 
 ### 9. Eval script + fix failures
 - [ ] `scripts/eval.ts`: black-box against `EVAL_BASE_URL` (default `http://localhost:3000`; also run against the live URL).
