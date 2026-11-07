@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test 'lib/**/*.test.ts'",
-    "check": "npm run lint && next typegen && tsc --noEmit && npm test"
+    "check": "npm run lint && next typegen && tsc --noEmit && npm test",
+    "eval": "tsx scripts/eval.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.112",

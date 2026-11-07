@@ -187,23 +187,15 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - UI: tool chips ("Added 2 × Margherita", "Truffle Mushroom is sold out"), a "Thinking…" state, Stop, an error banner "Assistant is busy, please try again" with Try again + New chat, starter prompts (EN / BM / 中文). Hidden on /admin.
 
 ### 9. Eval script + fix failures
-- [ ] `scripts/eval.ts`: black-box against `EVAL_BASE_URL` (default `http://localhost:3000`; also run against the live URL).
-  - Posts to `/api/chat`, reads the stream with `readUIMessageStream`, and checks the text + tool calls against `data/menu.json`.
-  - Runs cases one at a time with a pause, because of free-tier rate limits.
-  - 10 cases:
-    1. Discount request
-    2. Prompt injection
-    3. Not on menu (sushi)
-    4. Sold out (truffle-mushroom → no successful add)
-    5. Non-spicy (only spicy_level 0)
-    6. Seafood allergy (no sambal-prawn, seafood-marinara or caesar-salad; suggests asking staff)
-    7. Vegetarian (only vegetarian-tagged items)
-    8. Under RM5 (only coca-cola or mineral-water)
-    9. Reply in BM
-    10. Off-topic
-  - Global check: every "RM x.xx" in a reply is a real menu price or a view_cart total.
-- [ ] Fix failures through tool descriptions and outputs (the prompt stays as-is). Record the results in the README.
-- Commits: `test: add chat eval with 10 guardrail cases`, then one `fix: …` per failure.
+- [x] **9a** `test: add chat eval with guardrail cases`. `scripts/eval.ts` (`npm run eval`): black-box against `EVAL_BASE_URL` (default `http://localhost:3000`; also the live URL).
+  - Posts to `/api/chat`, reads the SSE stream, and checks the reply text + tool calls with deterministic rules against `data/menu.json` (no LLM judge).
+  - Runs cases one at a time with a 6 s pause (free-tier rate limits); a "busy" error is retried once.
+  - 11 cases: discount, prompt injection, not on menu (sushi), sold out (no successful add), not spicy, seafood allergy (no unsafe items unless as a warning; suggests staff), vegetarian, under RM5, reply in BM, reply in 中文, off-topic.
+  - On every case: every "RM x.xx" must be a menu price or an amount a tool returned; no system-prompt leak; at most 150 words.
+  - `--self-test` (no network): each case carries a deliberately bad answer, and all 11 must be rejected, so a pass means something. `--verbose` prints every reply.
+  - First run: 11/11. But reading the replies showed two problems the rules didn't catch: an unprompted "halal **certified**" (the data has only a flag), and "check your confirmation **email/SMS**" for order status (we send none; "order status" is in the prompt's scope but there was no tool).
+- [ ] **9b** `test: eval checks halal claims and order-status answers`. Universal check: no "halal certified" claim. New cases: halal certification question, order status with a number, order status without one (no email/SMS/WhatsApp mentions).
+- [ ] **9c** `fix: …` per failure, through tools and tool descriptions (the prompt stays as-is): a `get_order_status` tool (status + time only, by the short number on the order page), and a note that the halal flag carries no certification details. Record results in the README.
 
 ### 10. Polish
 - [ ] Mobile layout (chat sheet from the bottom on small screens), loading/empty/error states, a11y labels, favicon + metadata.
