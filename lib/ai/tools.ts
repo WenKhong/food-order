@@ -3,8 +3,10 @@ import { z } from 'zod';
 import { MAX_QTY } from '@/lib/cart';
 import { searchMenu } from '@/lib/menu/search';
 import { formatRM } from '@/lib/money';
+import { formatOrderTime } from '@/lib/orders/format';
+import { STATUS_LABELS, statusMessage } from '@/lib/orders/status';
 import { Category, ItemId, type MenuItem } from '@/lib/schemas/menu';
-import type { OrderLine } from '@/lib/schemas/order';
+import type { Fulfilment, OrderLine, OrderStatus } from '@/lib/schemas/order';
 
 // The assistant's tools. The SDK checks every tool input against its zod
 // schema before `execute` runs, so a malformed call never reaches our code.
@@ -14,6 +16,8 @@ import type { OrderLine } from '@/lib/schemas/order';
 type ToolDeps = {
   cart: OrderLine[]; // the browser's cart: ids, quantities and notes, never prices
   loadMenu: () => Promise<MenuItem[]>; // getMenu() in the app, a fixed list in tests
+  // getOrderStatusByNumber() in the app: status, pickup/delivery and time only
+  findOrder: (orderNumber: string) => Promise<{ status: OrderStatus; fulfilment: Fulfilment; created_at: string } | null>;
 };
 
 // What add_to_cart asks the browser to do (the cart lives there, not on the server).
@@ -41,7 +45,7 @@ function describeItem(item: MenuItem) {
   };
 }
 
-export function createTools({ cart, loadMenu }: ToolDeps) {
+export function createTools({ cart, loadMenu, findOrder }: ToolDeps) {
   // One database read per chat request, shared by every tool call in it.
   let menu: Promise<MenuItem[]> | undefined;
   const getMenu = () => (menu ??= loadMenu());
@@ -159,6 +163,31 @@ export function createTools({ cart, loadMenu }: ToolDeps) {
       execute: async () => {
         if (workingCart.length === 0) return { ok: false as const, reason: 'empty_cart' as const };
         return { ok: true as const, action: { type: 'go_to_checkout' as const } };
+      },
+    }),
+
+    get_order_status: tool({
+      description:
+        'Look up a placed order by the order number shown on its order page, e.g. "#92F7354A". Returns only its ' +
+        'status and when it was placed. Customers can always see live status on their order page; the restaurant ' +
+        'does not send emails or SMS.',
+      inputSchema: z.object({
+        order_number: z
+          .string()
+          .trim()
+          .regex(/^#?[0-9a-fA-F]{8}$/, 'An order number looks like #92F7354A'),
+      }),
+      execute: async ({ order_number }) => {
+        const number = `#${order_number.replace(/^#/, '').toUpperCase()}`;
+        const order = await findOrder(order_number);
+        if (!order) return { found: false as const, number };
+        return {
+          found: true as const,
+          number,
+          status: STATUS_LABELS[order.status],
+          message: statusMessage(order.status, order.fulfilment),
+          placed: formatOrderTime(order.created_at),
+        };
       },
     }),
   };

@@ -68,6 +68,30 @@ export async function getOrder(id: string): Promise<PublicOrder | null> {
   return data ? PublicOrder.parse(data) : null;
 }
 
+// For the assistant: an order's status from the short number on its order page
+// ("#92F7354A" is the first 8 characters of the id). It returns only the status,
+// pickup/delivery and time: 8 characters are far easier to guess than the full
+// link, so this must never reveal names, items or the link itself.
+const OrderStatusSummary = z.object({ status: OrderStatus, fulfilment: Fulfilment, created_at: z.string() });
+
+export async function getOrderStatusByNumber(orderNumber: string) {
+  const prefix = orderNumber.replace(/^#/, '').toLowerCase();
+  if (!/^[0-9a-f]{8}$/.test(prefix)) return null;
+  const { data, error } = await getSupabase()
+    .from('orders')
+    .select('status, fulfilment, created_at')
+    // Every id that starts with these 8 characters sorts between these two ids.
+    .gte('id', `${prefix}-0000-0000-0000-000000000000`)
+    .lte('id', `${prefix}-ffff-ffff-ffff-ffffffffffff`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    throw new Error(`Could not look up order: ${error.message}`);
+  }
+  return data ? OrderStatusSummary.parse(data) : null;
+}
+
 // What the admin board needs to prepare and hand over an order, including the
 // contact details. Only ever called behind the admin session.
 const AdminOrder = PublicOrder.extend({

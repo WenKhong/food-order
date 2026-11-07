@@ -12,7 +12,16 @@ import { createTools, type ChatTools } from './tools';
 // the real AI SDK validates the input with the tool's zod schema and runs it.
 // No network, no API key, no database (the real menu.json stands in for it).
 const menu = z.array(MenuItem).parse(JSON.parse(readFileSync('data/menu.json', 'utf8')));
-const tools = (cart: OrderLine[] = []) => createTools({ cart, loadMenu: async () => menu });
+// One known order, by its short number (what the order page shows as "#92F7354A").
+const orders = new Map([
+  ['92f7354a', { status: 'preparing' as const, fulfilment: 'pickup' as const, created_at: '2026-11-06T14:13:00Z' }],
+]);
+const tools = (cart: OrderLine[] = []) =>
+  createTools({
+    cart,
+    loadMenu: async () => menu,
+    findOrder: async (orderNumber) => orders.get(orderNumber.replace(/^#/, '').toLowerCase()) ?? null,
+  });
 
 const usage = {
   inputTokens: { total: 1, noCache: 1, cacheRead: undefined, cacheWrite: undefined },
@@ -34,8 +43,15 @@ async function call(toolSet: ChatTools, toolName: keyof ChatTools, input: unknow
   return part?.type === 'tool-result' ? part.output : undefined;
 }
 
-test('the assistant has exactly these five tools, and none of them places an order', () => {
-  assert.deepEqual(Object.keys(tools()).sort(), ['add_to_cart', 'get_item', 'go_to_checkout', 'search_menu', 'view_cart']);
+test('the assistant has exactly these six tools, and none of them places an order', () => {
+  assert.deepEqual(Object.keys(tools()).sort(), [
+    'add_to_cart',
+    'get_item',
+    'get_order_status',
+    'go_to_checkout',
+    'search_menu',
+    'view_cart',
+  ]);
 });
 
 test('search_menu returns database facts with the price already formatted', async () => {
@@ -121,6 +137,29 @@ test('an item added earlier in the same reply shows up in view_cart', async () =
   await call(sameRequest, 'add_to_cart', { menu_item_id: 'coca-cola', qty: 1 });
   const output = (await call(sameRequest, 'view_cart', {})) as { subtotal: string };
   assert.equal(output.subtotal, 'RM 4.50');
+});
+
+test('get_order_status returns only the status and time, in Malaysia time', async () => {
+  // Exactly these fields: no name, phone, address, items, total or order link.
+  assert.deepEqual(await call(tools(), 'get_order_status', { order_number: '#92f7354a' }), {
+    found: true,
+    number: '#92F7354A',
+    status: 'Preparing',
+    message: 'Our kitchen is preparing your order.',
+    placed: '6 Nov 2026, 10:13 pm',
+  });
+});
+
+test('get_order_status: unknown numbers are reported as not found', async () => {
+  assert.deepEqual(await call(tools(), 'get_order_status', { order_number: 'ABCDEF12' }), {
+    found: false,
+    number: '#ABCDEF12',
+  });
+});
+
+test('get_order_status only accepts an order number, not e.g. a phone number', async () => {
+  assert.deepEqual(await call(tools(), 'get_order_status', { order_number: '012-345 6789' }), { rejected: true });
+  assert.deepEqual(await call(tools(), 'get_order_status', { order_number: 'my last order' }), { rejected: true });
 });
 
 test('go_to_checkout needs something in the cart, and only navigates', async () => {

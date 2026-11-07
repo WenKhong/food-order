@@ -11,6 +11,7 @@ import { chatModel, describeAIError } from '@/lib/ai/models';
 import { SYSTEM_PROMPT } from '@/lib/ai/prompt';
 import { createTools } from '@/lib/ai/tools';
 import { getMenu } from '@/lib/menu/queries';
+import { getOrderStatusByNumber } from '@/lib/orders/queries';
 import { OrderLine } from '@/lib/schemas/order';
 
 const BUSY_MESSAGE = 'Assistant is busy, please try again.';
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
   const body = ChatRequest.safeParse(await request.json().catch(() => null));
   if (!body.success) return badRequest('Invalid chat request.');
 
-  const tools = createTools({ cart: body.data.cart, loadMenu: getMenu });
+  const tools = createTools({ cart: body.data.cart, loadMenu: getMenu, findOrder: getOrderStatusByNumber });
 
   let messages;
   try {

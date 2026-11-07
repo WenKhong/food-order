@@ -16,6 +16,8 @@ export function ToolStatus({ part }: { part: Part }) {
       return isDone(part.state) ? null : <Chip busy>Checking the menu…</Chip>;
     case 'tool-view_cart':
       return isDone(part.state) ? null : <Chip busy>Checking your cart…</Chip>;
+    case 'tool-get_order_status':
+      return isDone(part.state) ? null : <Chip busy>Looking up your order…</Chip>;
     case 'tool-add_to_cart':
       if (part.state === 'output-available') {
         return part.output.ok ? (
