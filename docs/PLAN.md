@@ -171,7 +171,7 @@ Order changed so no commit links to a page that doesn't exist yet: API → confi
   - `view_cart`: re-prices the client's cart (ids + quantities only) from the DB.
   - `go_to_checkout`: returns an action the widget turns into navigation; refuses an empty cart.
   - **No place-order tool exists.**
-- [ ] **7d** `feat: streaming /api/chat route`. `app/api/chat/route.ts`:
+- [x] **7d** `feat: streaming /api/chat route`. `app/api/chat/route.ts`:
   - zod body `{ messages (≤ 40), cart (≤ 30 lines) }`, then `validateUIMessages`.
   - `streamText({ model: chatModel, instructions, messages: await convertToModelMessages(…), tools, stopWhen: isStepCount(5), maxRetries: 0 })`. Retries are off because the fallback already switches models; SDK retries would add seconds of backoff.
   - Response: `createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: result.stream, originalMessages, onError: () => 'Assistant is busy, please try again.' }) })`.
